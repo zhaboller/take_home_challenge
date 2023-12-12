@@ -75,11 +75,7 @@ object Data_Aggregation {
     val revenueShare = totalRevenuePerChannel.withColumn("percentage_share", 
                           round((col("channel_revenue") / totalRevenue) * 100, 4)).orderBy("monetization_channel_id")
     revenueShare.show()
-    /*
-    val monetization_channel_id = revenueShare.map(_._1).to[scala.collection.immutable.Seq]
-    val immutable_shared_revenue_pct = revenueShare.map(_._3).to[scala.collection.immutable.Seq]
-    plotLineChart(monetization_channel_id, immutable_shared_revenue_pct, "Shared revenue across Monetization channel", "Revenue_over_Monitization.html")
-    */
+
 
   }
 }
