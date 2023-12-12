@@ -1,0 +1,1 @@
+addSbtPlugin("com.github.sbt" % "sbt-eclipse" % "6.0.0")
