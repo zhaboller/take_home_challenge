@@ -8,12 +8,27 @@ import plotly.layout._
 import plotly.Almond._
 import scala.collection.immutable.Seq
 object Data_Aggregation {
-    def plotLineChart(xValues: Seq[String], yValues: Seq[Double], title: String, outputFile: String): Unit = {
+    def plotScatterChart(xValues: Seq[String], yValues: Seq[Double], title: String, outputFile: String): Unit = {
         val timeSeriesPlot = Seq(
             Scatter(
             xValues,
             yValues.map(_.toDouble),
             mode = ScatterMode(ScatterMode.Markers)
+            )
+        )
+
+        // Define the layout of the plot.
+        val layout = Layout(title)
+
+        // Render the plot to a file (HTML).
+        plotly.Plotly.plot(outputFile, timeSeriesPlot, layout)
+    }
+    def plotLineChart(xValues: Seq[String], yValues: Seq[Double], title: String, outputFile: String): Unit = {
+        val timeSeriesPlot = Seq(
+            Scatter(
+            xValues,
+            yValues.map(_.toDouble),
+            mode = ScatterMode(ScatterMode.Lines)
             )
         )
 
@@ -39,7 +54,7 @@ object Data_Aggregation {
 
   
     df.select("advertiser_id","total_revenue").show(5)
-    val avg_revenue_by_advertiser = df.groupBy("advertiser_id").avg("total_revenue").withColumnRenamed("avg(total_revenue)", "avg_revenue")
+    val avg_revenue_by_advertiser = df.groupBy("advertiser_id").avg("total_revenue").withColumnRenamed("avg(total_revenue)", "avg_revenue").orderBy("advertiser_id")
     avg_revenue_by_advertiser.show()
     // Reformat the daily impression
     val avg_revenue_by_advertiser_formated = avg_revenue_by_advertiser
@@ -55,7 +70,13 @@ object Data_Aggregation {
 
   
     df.select("monetization_channel_id","total_revenue").show(5)
-    val total_revenue_channel = df.groupBy("monetization_channel_id").sum("total_revenue")
-    total_revenue_channel.show()
+    val totalRevenuePerChannel = df.groupBy("monetization_channel_id")
+                                  .agg(sum("total_revenue").alias("channel_revenue"))
+    totalRevenuePerChannel.show()
+    val totalRevenue = df.agg(sum("total_revenue").alias("total_revenue")).first().getAs[Double](0)
+
+    val revenueShare = totalRevenuePerChannel.withColumn("percentage_share", 
+                          round((col("channel_revenue") / totalRevenue) * 100, 4)).orderBy("monetization_channel_id")
+    revenueShare.show()
   }
 }
