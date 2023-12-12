@@ -8,11 +8,15 @@ import com.typesafe.config.ConfigFactory
 import scala.collection.JavaConverters._
 import take_home.Data_Extraction
 
-class Data_ExtractionTest extends AnyFunSuite {
-  val spark: SparkSession = SparkSession.builder()
-    .appName("DataExtractionTest")
-    .master("local[*]")
-    .getOrCreate()
+class Data_ExtractionTest extends AnyFunSuite with BeforeAndAfterAll {
+  var spark: SparkSession = _
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    spark = SparkSession.builder()
+      .appName("DataExtractionTest")
+      .master("local[*]")
+      .getOrCreate()
+  }
   test("Data_Extraction should load data correctly") {
     val config = ConfigFactory.load()
     val testCsvPath = config.getString("takehome.paths.dataset")
@@ -33,5 +37,11 @@ class Data_ExtractionTest extends AnyFunSuite {
       }.toList)
     assert(df.schema.toList == expectedSchema)
   }
-  spark.stop()
+  override def afterAll(): Unit = {
+    try {
+      spark.stop()
+    } finally {
+      super.afterAll()
+    }
+  }
 }

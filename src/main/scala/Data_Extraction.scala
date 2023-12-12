@@ -14,7 +14,7 @@ object Data_Extraction {
         var df = spark.read.option("header", "true")
                     .option("inferSchema", "true")
                     .csv(filePath).cache()
-
         df
   }
+  
 }

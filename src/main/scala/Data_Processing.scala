@@ -9,36 +9,36 @@ import plotly.Almond._
 import scala.collection.immutable.Seq
 
 object Data_Processing {
-    def plotLineChart(xValues: Seq[String], yValues: Seq[Double], title: String, outputFile: String): Unit = {
-          val timeSeriesPlot = Seq(
-              Scatter(
-              xValues,
-              yValues.map(_.toDouble),
-              mode = ScatterMode(ScatterMode.Lines)
-              )
-          )
-
-          // Define the layout of the plot.
-          val layout = Layout(title)
-
-          // Render the plot to a file (HTML).
-          plotly.Plotly.plot(outputFile, timeSeriesPlot, layout)
-      }
-  def cleanData(df: DataFrame): DataFrame = {
-    // Logic to clean data
-    val spark = SparkSession
-        .builder
-        .master("local[*]")
-        .appName("TakeHome")
-        .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
-    // Since revenue_share_percent and integration_type_id only have one distinct value, we can remove those two features
-    var df_clean = df.drop("revenue_share_percent", "integration_type_id")
-    // Convert Date Format
-    df_clean = df_clean.withColumn("date", to_date(col("date"), "yyyy-MM-dd HH:mm:ss"))
-    // Check and Remove Duplicates
-    df_clean = df_clean.dropDuplicates()
-    df_clean.describe().show()
-    df_clean
-  }
+    def DropCol(df: DataFrame): DataFrame = {
+        // Since revenue_share_percent and integration_type_id only have one distinct value, we can remove those two features
+        var df_clean = df.drop("revenue_share_percent", "integration_type_id")
+        df_clean
+    }
+    def ConvertFormat(df: DataFrame): DataFrame = {
+        // Since revenue_share_percent and integration_type_id only have one distinct value, we can remove those two features
+        var df_clean = df.withColumn("date", to_date(col("date"), "yyyy-MM-dd HH:mm:ss"))
+        df_clean
+    }
+    def dropDup(df: DataFrame): DataFrame = {
+        // Check and Remove Duplicates
+        var df_clean = df.dropDuplicates()
+        df_clean
+    }
+    def cleanData(df: DataFrame): DataFrame = {
+        // Logic to clean data
+        val spark = SparkSession
+            .builder
+            .master("local[*]")
+            .appName("TakeHome")
+            .getOrCreate()
+        spark.sparkContext.setLogLevel("ERROR")
+        // Since revenue_share_percent and integration_type_id only have one distinct value, we can remove those two features
+        var df_clean = DropCol(df)
+        // Convert Date Format
+        df_clean = ConvertFormat((df_clean))
+        // Check and Remove Duplicates
+        df_clean = dropDup(df_clean)
+        df_clean.describe().show()
+        df_clean
+    }
 }

@@ -50,9 +50,6 @@ object Data_Aggregation {
     val Site_Ad_tppe = siteIds.zip(adTypeIds).map { case (site, adType) => s"Site: $site, AdType: $adType" }.to[scala.collection.immutable.Seq]
     plotLineChart(Site_Ad_tppe, impressions, "Impression across Site and Adtype", "reports/Impression_over_Site_and_Adtype.html")
 
-
-
-  
     df.select("advertiser_id","total_revenue").show(5)
     val avg_revenue_by_advertiser = df.groupBy("advertiser_id").avg("total_revenue").withColumnRenamed("avg(total_revenue)", "avg_revenue").orderBy("advertiser_id")
     avg_revenue_by_advertiser.show()
