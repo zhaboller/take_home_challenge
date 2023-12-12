@@ -71,6 +71,11 @@ Compile and execute the code
 sbt compile
 sbt run
 ```
+Use the following code to run test cases
+```bash 
+sbt test
+```
+
 
 Here are some dependencies used:
 - spark-core and spark-sql are essential for data processing and analysis tasks.
