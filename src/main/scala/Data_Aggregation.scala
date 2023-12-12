@@ -53,20 +53,9 @@ object Data_Aggregation {
 
     plotLineChart(advertiser_id, immutable_Total_revenue, "Total Revenue across Advertiser", "Revenue_over_Advertiser.html")
 
-    val barData = Seq(
-      Bar(x = advertiser_id, y = immutable_Total_revenue)
-    )
-    // Setting up the layout
-    val layout = Layout(
-      title = "Sample Bar Plot",
-      xaxis = Axis(title = "Categories"),
-      yaxis = Axis(title = "Values")
-    )
-    val plotFile = "bar_plot.html"
-    plot(plotFile, barData, layout)
   
     df.select("monetization_channel_id","total_revenue").show(5)
-    val total_revenue_channel = df.groupBy("monetization_channel_id").avg("total_revenue")
+    val total_revenue_channel = df.groupBy("monetization_channel_id").sum("total_revenue")
     total_revenue_channel.show()
   }
 }
