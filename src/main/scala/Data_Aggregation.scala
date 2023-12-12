@@ -79,9 +79,10 @@ object Data_Aggregation {
 
         val totalRevenue = df.agg(sum("total_revenue").alias("total_revenue")).first().getAs[Double](0)
 
-    val revenueShare = totalRevenuePerChannel.withColumn("percentage_share", 
-                          round((col("channel_revenue") / totalRevenue) * 100, 4)).orderBy("monetization_channel_id")
-    revenueShare.show()
+        val revenueShare = totalRevenuePerChannel.withColumn("percentage_share", 
+                          round((col("channel_revenue") / totalRevenue) * 100, 4))
+                          .orderBy("monetization_channel_id")
+        revenueShare.show()
 
 
   }
