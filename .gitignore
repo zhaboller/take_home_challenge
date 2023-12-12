@@ -1,1 +1,9 @@
- 
+.metals/
+.bloop/
+.target/
+.project/
+.classpath
+.cache-main/
+.vscode/
+.settings/
+.worksheet
