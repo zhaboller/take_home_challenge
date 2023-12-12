@@ -9,9 +9,16 @@ import plotly.element._
 import plotly.layout._
 import plotly.Almond._
 import scala.collection.immutable.Seq
-
+import com.typesafe.config.ConfigFactory
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
 object TakeHome {
   def main(args: Array[String]): Unit ={
+    // Load the configuration
+    val config = ConfigFactory.load("application.conf")
+    val datasetPath = config.getString("takehome.paths.dataset")
+    val logLevel = config.getString("takehome.logging.level")
+
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
     val spark = SparkSession
@@ -19,8 +26,8 @@ object TakeHome {
       .master("local[*]")
       .appName("TakeHome")
       .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
-    val rawData = Data_Extraction.loadFromCSV("../Dataset.csv")
+    spark.sparkContext.setLogLevel(logLevel)
+    val rawData = Data_Extraction.loadFromCSV(datasetPath)
     println(rawData.printSchema())
     println(rawData.show(15))
     println(rawData.describe().show())

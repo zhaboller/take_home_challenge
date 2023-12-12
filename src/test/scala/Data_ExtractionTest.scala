@@ -4,6 +4,8 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+import com.typesafe.config.ConfigFactory
+import scala.collection.JavaConverters._
 import take_home.Data_Extraction
 
 class Data_ExtractionTest extends AnyFunSuite {
@@ -12,30 +14,23 @@ class Data_ExtractionTest extends AnyFunSuite {
     .master("local[*]")
     .getOrCreate()
   test("Data_Extraction should load data correctly") {
-
-    val testCsvPath = "src/test/resources/Dataset.csv"
+    val config = ConfigFactory.load()
+    val testCsvPath = config.getString("takehome.paths.dataset")
 
     val df = Data_Extraction.loadFromCSV(testCsvPath)
-
-    val expectedSchema = StructType(List(
-      StructField("date", TimestampType, true),
-      StructField("site_id", IntegerType, true),
-      StructField("ad_type_id", IntegerType, true),
-      StructField("geo_id", IntegerType, true),
-      StructField("device_category_id", IntegerType, true),
-      StructField("advertiser_id", IntegerType, true),
-      StructField("order_id", IntegerType, true),
-      StructField("line_item_type_id", IntegerType, true),
-      StructField("os_id", IntegerType, true),
-      StructField("integration_type_id", IntegerType, true),
-      StructField("monetization_channel_id", IntegerType, true),
-      StructField("ad_unit_id", IntegerType, true),
-      StructField("total_impressions", IntegerType, true),
-      StructField("total_revenue", DoubleType, true),
-      StructField("viewable_impressions", IntegerType, true),
-      StructField("measurable_impressions", IntegerType, true),
-      StructField("revenue_share_percent", IntegerType, true)
-    ))
+    val schemaConfigList = config.getConfigList("takehome.schema.fields")
+    val expectedSchema = StructType(schemaConfigList.asScala.map { fieldConfig =>
+      val name = fieldConfig.getString("name")
+      val dataType = fieldConfig.getString("type") match {
+      case "timestamp" => TimestampType
+      case "integer" => IntegerType
+      case "double" => DoubleType
+      // Add cases for other data types as needed
+      case _ => StringType // Default case, can be adjusted as needed
+      }
+      val nullable = fieldConfig.getBoolean("nullable")
+      StructField(name, dataType, nullable)
+      }.toList)
     assert(df.schema.toList == expectedSchema)
   }
   spark.stop()
