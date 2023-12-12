@@ -36,11 +36,12 @@ object TakeHome {
         val distinctCount = rawData.select(columnName).distinct().count()
         println(s"Column $columnName has $distinctCount distinct values")
     }
+    
     val cleanedData = Data_Processing.cleanData(rawData)
-    cleanedData.show(2)
+
     Data_Aggregation.aggregateData(cleanedData)
 
-    //Time_Series_Analysis.analyze(cleanedData)
+    Time_Series_Analysis.analyze(cleanedData)
     
 
   // Stop the Spark session

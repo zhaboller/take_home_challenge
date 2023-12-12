@@ -1,6 +1,7 @@
 package take_home
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions._
 import plotly._
 import plotly.element._
 import plotly.layout._
@@ -33,14 +34,11 @@ object Data_Processing {
     spark.sparkContext.setLogLevel("ERROR")
     // Since revenue_share_percent and integration_type_id only have one distinct value, we can remove those two features
     var df_clean = df.drop("revenue_share_percent", "integration_type_id")
-
-
-
-
-
-
-
-
+    // Convert Date Format
+    df_clean = df_clean.withColumn("date", to_date(col("date"), "yyyy-MM-dd HH:mm:ss"))
+    // Check and Remove Duplicates
+    df_clean = df_clean.dropDuplicates()
+    df_clean.describe().show()
     df_clean
   }
 }

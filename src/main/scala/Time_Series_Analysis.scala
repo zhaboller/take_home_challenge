@@ -33,7 +33,7 @@ object Time_Series_Analysis {
 
         val windowSpec = org.apache.spark.sql.expressions.Window.orderBy("date").rowsBetween(-7, 0) // 7-day moving average
         val movingAvg = impressionsByDay.withColumn("moving_avg", avg("daily_impressions").over(windowSpec))
-        movingAvg.show()
+        println(movingAvg.show())
 
         // Reformat the daily impression
         val timeSeriesData = impressionsByDay
@@ -45,7 +45,15 @@ object Time_Series_Analysis {
         val dateStrings = timeSeriesData.map(_._1).to[scala.collection.immutable.Seq]
         val immutableImpressions = timeSeriesData.map(_._2).to[scala.collection.immutable.Seq]
 
-        plotLineChart(dateStrings, immutableImpressions, "Daily Impressions Over Time", "impressions_time_series.html")
+        plotLineChart(dateStrings, immutableImpressions, "Daily Impressions Over Time", "reports/impressions_time_series.html")
+
+
+        // Convert the date column to Date type
+        val impressionsByDayWithDate = impressionsByDay.withColumn("date", to_date(col("date")))
+        val impressionsByDayWithDayOfWeek = impressionsByDayWithDate.withColumn("day_of_week", date_format(col("date"), "EEEE"))
+        // Collect the data and create a new DataFrame called detailed_daily_impression
+        val detailed_daily_impression = impressionsByDayWithDayOfWeek.select("date", "day_of_week", "daily_impressions")
+        println(detailed_daily_impression.show(30))
 
 
         // Total revenue per day
@@ -61,7 +69,7 @@ object Time_Series_Analysis {
         val dateStrings_rev = timeSeriesData_rev.map(_._1).to[scala.collection.immutable.Seq]
         val immutableRevenue = timeSeriesData_rev.map(_._2).to[scala.collection.immutable.Seq]
 
-        plotLineChart(dateStrings, immutableRevenue, "Daily Revenue Over Time", "revenue_time_series.html")
+        plotLineChart(dateStrings, immutableRevenue, "Daily Revenue Over Time", "reports/revenue_time_series.html")
     }
 
 }

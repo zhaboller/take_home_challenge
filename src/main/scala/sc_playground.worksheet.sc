@@ -49,24 +49,53 @@ impressionsByDay.show()
 
 val timeSeriesData = impressionsByDay.collect().map(row => (row.getAs[java.sql.Date]("date"), row.getAs[Long]("daily_impressions"))).toSeq
 
-// Separate the dates and impressions into two sequences.
-val (dates, impressions) = timeSeriesData.unzip
+val totalRevenuePerChannel = df.groupBy("monetization_channel_id")
+                                 .agg(sum("total_revenue").alias("channel_revenue"))
+totalRevenuePerChannel.show()
+val totalRevenue = df.agg(sum("total_revenue").alias("total_revenue")).first().getAs[Double](0)
 
-// Convert dates to strings for plotting. Depending on the plotly-scala API version, you might need to use .toString.
-val dateStrings = dates.map(_.toString)
+val revenueShare = totalRevenuePerChannel.withColumn("percentage_share", 
+                      round((col("channel_revenue") / totalRevenue) * 100, 4)).orderBy("monetization_channel_id")
 
-// Create the time series plot.
-val timeSeriesPlot = Seq(
-  Scatter(
-    dateStrings,
-    impressions,
-    mode = ScatterMode(ScatterMode.Markers)
-  )
-)
+revenueShare.show()
+revenueShare.map(_._2).show()
 
-// Define the layout of the plot.
-val layout = Layout().title("Daily Impressions Over Time")
+val revenueByDay = df.groupBy("date")
+.agg(sum("total_revenue").alias("daily_revenue"))
+.orderBy("date")
+val timeSeriesData_rev = revenueByDay
+    .withColumn("date", to_date(col("date")))
+    .collect()
+    .map(row => (row.getAs[java.sql.Date]("date").toString, row.getAs[Double]("daily_revenue")))
+    .toSeq
+// Convert to immutable Seq explicitly and ensure dates are converted to strings
+val dateStrings_rev = timeSeriesData_rev.map(_._1).to[scala.collection.immutable.Seq]
+val immutableRevenue = timeSeriesData_rev.map(_._2).to[scala.collection.immutable.Seq]
 
-// Render the plot to a file (HTML).
-val plotFile = "impressions_time_series.html"
-plotly.Plotly.plot(plotFile, timeSeriesPlot, layout)
+
+// Convert the date column to Date type
+val revenueByDayWithDate = revenueByDay.withColumn("date", to_date(col("date")))
+
+// Extract day of the week from the date
+val revenueByDayWithDayOfWeek = revenueByDayWithDate.withColumn("day_of_week", date_format(col("date"), "EEEE"))
+
+// Collect the data and create a new DataFrame
+val newDataset = revenueByDayWithDayOfWeek.select("date", "day_of_week", "daily_revenue")
+
+// Show the new dataset
+println(newDataset)
+
+
+// Convert the date column to Date type
+val impressionsByDayWithDate = impressionsByDay.withColumn("date", to_date(col("date")))
+// Extract day of the week from the date
+val impressionsByDayWithDayOfWeek = impressionsByDayWithDate.withColumn("day_of_week", date_format(col("date"), "EEEE"))
+// Collect the data and create a new DataFrame called detailed_daily_impression
+val detailed_daily_impression = impressionsByDayWithDayOfWeek.select("date", "day_of_week", "daily_impressions")
+detailed_daily_impression.show(30)
+detailed_daily_impression.select("daily_impressions").describe().show()
+
+df.select("monetization_channel_id","total_revenue").show(5)
+
+totalRevenuePerChannel.show()
+

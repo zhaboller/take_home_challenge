@@ -48,7 +48,7 @@ object Data_Aggregation {
     val adTypeIds = totalImpressionsData.map(_.getAs[Long]("ad_type_id").toString).toSeq
     val impressions = totalImpressionsData.map(_.getAs[Long]("sum(total_impressions)").toDouble).toSeq.to[scala.collection.immutable.Seq]
     val Site_Ad_tppe = siteIds.zip(adTypeIds).map { case (site, adType) => s"Site: $site, AdType: $adType" }.to[scala.collection.immutable.Seq]
-    plotLineChart(Site_Ad_tppe, impressions, "Imporession across Site and Adtype", "Imporession_over_Site_and_Adtype.html")
+    plotLineChart(Site_Ad_tppe, impressions, "Impression across Site and Adtype", "reports/Impression_over_Site_and_Adtype.html")
 
 
 
@@ -66,7 +66,7 @@ object Data_Aggregation {
     val advertiser_id = avg_revenue_by_advertiser_formated.map(_._1).to[scala.collection.immutable.Seq]
     val immutable_Total_revenue = avg_revenue_by_advertiser_formated.map(_._2).to[scala.collection.immutable.Seq]
 
-    plotLineChart(advertiser_id, immutable_Total_revenue, "Total Revenue across Advertiser", "Revenue_over_Advertiser.html")
+    plotScatterChart(advertiser_id, immutable_Total_revenue, "Total Revenue across Advertiser", "reports/Revenue_over_Advertiser.html")
 
   
     df.select("monetization_channel_id","total_revenue").show(5)
@@ -78,5 +78,11 @@ object Data_Aggregation {
     val revenueShare = totalRevenuePerChannel.withColumn("percentage_share", 
                           round((col("channel_revenue") / totalRevenue) * 100, 4)).orderBy("monetization_channel_id")
     revenueShare.show()
+    /*
+    val monetization_channel_id = revenueShare.map(_._1).to[scala.collection.immutable.Seq]
+    val immutable_shared_revenue_pct = revenueShare.map(_._3).to[scala.collection.immutable.Seq]
+    plotLineChart(monetization_channel_id, immutable_shared_revenue_pct, "Shared revenue across Monetization channel", "Revenue_over_Monitization.html")
+    */
+
   }
 }
